@@ -9,7 +9,7 @@
 套用方法：
 ```sh
 clang-format --version
-clang-format -i include/*.h *.cpp
+clang-format -i include/*.h *.cpp *.ino
 ```
 沒有clang-format 的話因為我們OS都是arch所以
 ```sh
@@ -24,3 +24,5 @@ AppState currentAppState = AppState::**Your Status**
 7. 作boolean `!=` 時改使用 `^` 搭配C++原生`static_cast<type>(foo)` 時間消耗1 CLK 較且在組語XOR速度較 `==` `!=` 速度快
 
 8. the burn command in platformio -> ```pio run -e nano_new -t upload --upload-port $port_name``` 
+
+9. 高度 / 數值相關的 常數 `marco`變數 改用`constexpr`取代`define`

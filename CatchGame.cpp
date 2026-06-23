@@ -1,6 +1,7 @@
 #include "include/CatchGame.h"
 #include "include/Globals.h"
 #include "include/HardwareManager.h"
+#include "include/LcdRelated.h"
 #include <math.h>
 
 // ================================================================
@@ -67,7 +68,7 @@ static float readPlayerTilt();
 void loopCatchGame() {
     // ---- Calibration phase ----
     cgState = CatchState::CS_CALIBRATE;
-    drawCalibScreen();
+    drawCalibationScreen();
 
     while (cgState == CatchState::CS_CALIBRATE) {
         uint32_t fs = millis();
@@ -340,7 +341,7 @@ static float readPlayerTilt() {
     return ACCEL_TO_G(ACCEL_RAW_X(), getBaseRawX());
 }
 
-// ---- Calibration screen ----
+/*// ---- Calibration screen ----
 static void drawCalibScreen() {
     tft.fillScreen(CG_BG);
     tft.setTextColor(CG_TEXT_CLR, CG_BG);
@@ -354,7 +355,7 @@ static void drawCalibScreen() {
     tft.print(F("in your play position,"));
     tft.setCursor(10, 145);
     tft.print(F("then press button."));
-}
+}*/
 
 // ---- Game over screen ----
 static void drawGameOverScreen() {

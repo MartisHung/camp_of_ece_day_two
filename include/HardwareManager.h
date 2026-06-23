@@ -14,9 +14,9 @@
 #define TFT_DC 7
 
 // ---- ADXL335 Analog Pins ----
-#define ACCEL_X_PIN A5
-#define ACCEL_Y_PIN A6
-#define ACCEL_Z_PIN A7
+#define ADXL_X A5
+#define ADXL_Y A6
+#define ADXL_Z A7
 
 // ---- Rotary Encoder Pins ----
 #define ENC_SW 2
@@ -30,9 +30,9 @@
 #define ADXL_COUNTS_PER_G 61.4f
 
 // ---- Fast ADC Macros ----
-#define ACCEL_RAW_X() analogRead(ACCEL_X_PIN)
-#define ACCEL_RAW_Y() analogRead(ACCEL_Y_PIN)
-#define ACCEL_RAW_Z() analogRead(ACCEL_Z_PIN)
+#define ACCEL_RAW_X() analogRead(ADXL_X)
+#define ACCEL_RAW_Y() analogRead(ADXL_Y)
+#define ACCEL_RAW_Z() analogRead(ADXL_Z)
 // Convert raw ADC delta from baseline → g value (float)
 #define ACCEL_TO_G(raw, base) (((float)((int16_t)(raw) - (int16_t)(base))) / ADXL_COUNTS_PER_G)
 

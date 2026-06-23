@@ -1,4 +1,5 @@
 #include "include/HardwareManager.h"
+#include "include/LcdRelated.h"
 
 // ---- Display Object ----
 // Adafruit_ILI9341 tft = Adafruit_ILI9341(TFT_CS, TFT_DC, 11, 13, TFT_RST, 12);
@@ -102,9 +103,9 @@ bool isButtonPressed() {
 
 // ================================================================
 void captureBaseline() {
-    baseRawX = (int16_t)analogRead(ACCEL_X_PIN);
-    baseRawY = (int16_t)analogRead(ACCEL_Y_PIN);
-    baseRawZ = (int16_t)analogRead(ACCEL_Z_PIN);
+    baseRawX = (int16_t)analogRead(ADXL_X);
+    baseRawY = (int16_t)analogRead(ADXL_Y);
+    baseRawZ = (int16_t)analogRead(ADXL_Z);
     Serial.print(F("[ACCEL] baseline X="));
     Serial.print(baseRawX);
     Serial.print(F(" Y="));
@@ -121,4 +122,20 @@ int16_t getBaseRawY() {
 }
 int16_t getBaseRawZ() {
     return baseRawZ;
+}
+// the define is at "LcdRelated.h"
+void drawCalibationScreen(){
+    tft.fillScreen(COLOR_BLACK);
+    tft.setTextColor(COLOR_WHITE, COLOR_BLACK);
+    tft.setTextSize(2);
+    tft.setCursor(20, 60);
+    tft.print(F("CALIBRATION"));
+    tft.setTextSize(1);
+    tft.setCursor(10, 110);
+    tft.print(F("Hold device flat"));
+    tft.setCursor(10, 125);
+    tft.print(F("in your play position,"));
+    tft.setCursor(10, 145);
+    tft.print(F("then press button."));
+
 }

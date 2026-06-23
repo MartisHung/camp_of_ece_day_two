@@ -1,120 +1,155 @@
 #include "include/AngleTest.h"
+#include "Arduino.h"
 #include "include/Globals.h"
 #include "include/HardwareManager.h"
-#include <math.h>
+#include "include/LcdRelated.h"
+#include <stdint.h>
+#include <stdio.h>
 
-// ================================================================
-// Private macros
-// ================================================================
-#define AT_BG       ILI9341_BLACK
-#define AT_LABEL    ILI9341_CYAN
-#define AT_VALUE    ILI9341_WHITE
-#define AT_WARN     ILI9341_YELLOW
+constexpr uint8_t VAL_X = 55, VAL_W = 120, GAPS_BETWEEN_ROWS = 20, DIRECTION_DATA_X = 100;
+constexpr uint8_t IDLE_RANGE = 15, THE_SAPERATE_LINE_FOR_DIR_AND_OTHERS = 160;
+constexpr uint8_t HEIGHT_OF_RAW_X = 80, HEIGHT_OF_RAW_Y = HEIGHT_OF_RAW_X + GAPS_BETWEEN_ROWS,
+                  HEIGHT_OF_RAW_Z = HEIGHT_OF_RAW_X + 2 * GAPS_BETWEEN_ROWS;
+constexpr uint8_t HEIGHT_OF_SUBMENU = THE_SAPERATE_LINE_FOR_DIR_AND_OTHERS + 1 * GAPS_BETWEEN_ROWS,
+                  HEIGHT_OF_2048 = THE_SAPERATE_LINE_FOR_DIR_AND_OTHERS + 2 * GAPS_BETWEEN_ROWS,
+                  HEIGHT_OF_CATCH_GAME =
+                      THE_SAPERATE_LINE_FOR_DIR_AND_OTHERS + 3 * GAPS_BETWEEN_ROWS;
 
-// Layout: labels at fixed x=10, values at x=VAL_X
-// Each row height = 18 px (textSize 1 = 8px + 10px gap)
-#define VAL_X       55      // x where numeric value starts
-#define VAL_W       120     // width to erase before redrawing value
-#define ROW_H       18
+// 左上為負 右下為正
+static int8_t threeAxisData[3];
+static void drawAngleTestBackground(), updateThreeAxisData(const int8_t y, const char *),
+    updateDirectionData(const uint8_t y, const Direction dir);
 
-#define ROW_RAW_X   50      // y: Raw X
-#define ROW_RAW_Y   (ROW_RAW_X + ROW_H)
-#define ROW_RAW_Z   (ROW_RAW_Y + ROW_H)
-#define ROW_G_X     (ROW_RAW_Z + ROW_H + 6)
-#define ROW_G_Y     (ROW_G_X + ROW_H)
-#define ROW_G_Z     (ROW_G_Y + ROW_H)
-#define ROW_PITCH   (ROW_G_Z + ROW_H + 6)
-#define ROW_ROLL    (ROW_PITCH + ROW_H)
+// 290 ~ 450
+// Mid -> 370
+// 右前 -> 左後
+Direction getDirectionForGame2048(uint8_t getThreeAxisSensorData) {
+    if (getThreeAxisSensorData) {
+        *(threeAxisData + 0) =
+            static_cast<int8_t>((-1) * map(analogRead(ADXL_X), 290, 450, -50, 50));
+        *(threeAxisData + 1) = static_cast<int8_t>(map(analogRead(ADXL_Y), 290, 450, -50, 50));
+    }
+    if ((*(threeAxisData + 0) > IDLE_RANGE || *(threeAxisData + 0) < -IDLE_RANGE) ||
+        (*(threeAxisData + 1) > IDLE_RANGE || *(threeAxisData + 1) < -IDLE_RANGE)) {
+        if (*(threeAxisData + 0) == *(threeAxisData + 1)) return Direction::ERROR;
 
-// ================================================================
-// Static helpers
-// ================================================================
+        // if -> x>y ,else y->x
+        if (*(threeAxisData + 0) * *(threeAxisData + 0) >
+            *(threeAxisData + 1) * *(threeAxisData + 1))
+            return (*(threeAxisData + 0) < 0) ? Direction::LEFT : Direction::RIGHT;
+        else
+            return (*(threeAxisData + 1) < 0) ? Direction::UP : Direction::DOWN;
 
-// Draw all static labels (called once)
-static void drawATStaticBG() {
-    tft.fillScreen(AT_BG);
+    } else
+        return Direction::IDLE;
+}
+Direction getDirectionForGameCatch(uint8_t getThreeAxisSensorData) {
+    if (getThreeAxisSensorData)
+        *(threeAxisData + 0) =
+            static_cast<int8_t>((-1) * map(analogRead(ADXL_X), 290, 450, -50, 50));
+
+    return (*(threeAxisData + 0) < -IDLE_RANGE || *(threeAxisData + 0) > IDLE_RANGE)
+               ? (*(threeAxisData + 0) > IDLE_RANGE) ? Direction::RIGHT : Direction::LEFT
+               : Direction::IDLE;
+}
+
+void loopAngleTest() {
+    drawAngleTestBackground();
+    uint32_t fs;
+    while (1) {
+        updateHardware();
+        if (isButtonPressed()) return;
+        if (millis() - fs < 100) continue;
+
+        // 把數值改成左上為負 右下為正
+        *(threeAxisData + 0) =
+            static_cast<int8_t>((-1) * map(analogRead(ADXL_X), 290, 450, -50, 50));
+        *(threeAxisData + 1) = static_cast<int8_t>(map(analogRead(ADXL_Y), 290, 450, -50, 50));
+        *(threeAxisData + 2) = static_cast<int8_t>(map(analogRead(ADXL_Z), 290, 450, -50, 50));
+
+        char buffer[3][4];
+        snprintf(*(buffer + 0), 4, "%d", *(threeAxisData + 0));
+        snprintf(*(buffer + 1), 4, "%d", *(threeAxisData + 1));
+        snprintf(*(buffer + 2), 4, "%d", *(threeAxisData + 2));
+        updateThreeAxisData(HEIGHT_OF_RAW_X, *(buffer + 0));
+        updateThreeAxisData(HEIGHT_OF_RAW_Y, *(buffer + 1));
+        updateThreeAxisData(HEIGHT_OF_RAW_Z, *(buffer + 2));
+
+        updateDirectionData(HEIGHT_OF_2048, getDirectionForGame2048(0));
+        updateDirectionData(HEIGHT_OF_CATCH_GAME, getDirectionForGameCatch(0));
+        fs = millis();
+    }
+}
+
+static void drawAngleTestBackground() {
+    tft.fillScreen(COLOR_BLACK);
 
     tft.setTextSize(2);
-    tft.setTextColor(AT_LABEL, AT_BG);
+    tft.setTextColor(COLOR_CYAN, COLOR_BLACK);
     tft.setCursor(30, 10);
     tft.print(F("ANGLE TEST"));
-
+    tft.drawFastHLine(0, HIGHT_OF_THE_HORIZONTIAL_SAPERATE_LINE_FOR_TITLE_AND_DATAS, TFT_W,
+                      COLOR_GRAY);
     tft.setTextSize(1);
-    tft.setTextColor(AT_LABEL, AT_BG);
+    tft.setTextColor(COLOR_CYAN, COLOR_BLACK);
 
-    tft.setCursor(10, ROW_RAW_X); tft.print(F("Raw X:"));
-    tft.setCursor(10, ROW_RAW_Y); tft.print(F("Raw Y:"));
-    tft.setCursor(10, ROW_RAW_Z); tft.print(F("Raw Z:"));
+    tft.setCursor(10, HEIGHT_OF_RAW_X);
+    tft.print(F("Raw X:"));
+    tft.setCursor(10, HEIGHT_OF_RAW_Y);
+    tft.print(F("Raw Y:"));
+    tft.setCursor(10, HEIGHT_OF_RAW_Z);
+    tft.print(F("Raw Z:"));
 
-    tft.setCursor(10, ROW_G_X);   tft.print(F("gX:"));
-    tft.setCursor(10, ROW_G_Y);   tft.print(F("gY:"));
-    tft.setCursor(10, ROW_G_Z);   tft.print(F("gZ:"));
+    tft.drawFastHLine(0, THE_SAPERATE_LINE_FOR_DIR_AND_OTHERS, TFT_W, COLOR_GRAY);
+    
+    tft.setTextSize(2);
+    tft.setCursor(10,HEIGHT_OF_SUBMENU);
+    tft.setTextSize(1);
+    tft.print(F("The Direction Of Games:"));
+    tft.setCursor(10, HEIGHT_OF_2048);
+    tft.print(F("2048  ->"));
+    tft.setCursor(10, HEIGHT_OF_CATCH_GAME);
+    tft.print(F("Catch ->"));
 
-    tft.setCursor(10, ROW_PITCH); tft.print(F("Pitch:"));
-    tft.setCursor(10, ROW_ROLL);  tft.print(F("Roll:"));
-
-    tft.setTextColor(AT_WARN, AT_BG);
+    tft.setTextColor(COLOR_YELLOW, COLOR_BLACK);
     tft.setCursor(10, 290);
     tft.print(F("Press button to exit"));
 }
 
-// Erase + redraw a single numeric row
-static void printValue(int16_t y, float val, uint8_t decimals) {
-    tft.fillRect(VAL_X, y, VAL_W, 8, AT_BG);
-    tft.setTextColor(AT_VALUE, AT_BG);
+// y -> the one which is changing (HEIGHT_OF_RAW_{X,Y,Z}這邊我高度都改差不多了)
+// *str -> 輸入得字串 int to str 再上層函數就該弄完
+static void updateThreeAxisData(const int8_t y, const char *str) {
+    tft.fillRect(VAL_X, y, VAL_W, 10, COLOR_BLACK);
+    tft.setTextColor(COLOR_WHITE, COLOR_BLACK);
     tft.setTextSize(1);
     tft.setCursor(VAL_X, y);
-    tft.print(val, decimals);
+    tft.print(str);
 }
-
-static void printValueInt(int16_t y, int16_t val) {
-    tft.fillRect(VAL_X, y, VAL_W, 8, AT_BG);
-    tft.setTextColor(AT_VALUE, AT_BG);
+static void updateDirectionData(const uint8_t y, const Direction dir) {
+    static Direction o_dir;
+    tft.fillRect(DIRECTION_DATA_X, y, VAL_W, 30, COLOR_BLACK);
+    tft.setTextColor(COLOR_WHITE, COLOR_BLACK);
     tft.setTextSize(1);
-    tft.setCursor(VAL_X, y);
-    tft.print(val);
-}
-
-// ================================================================
-// loopAngleTest – public entry (blocking)
-// ================================================================
-void loopAngleTest() {
-    drawATStaticBG();
-
-    while (true) {
-        uint32_t fs = millis();
-        updateHardware();
-
-        if (isButtonPressed()) return;  // exit to main menu
-
-        // ---- Read raw ADC ----
-        int16_t rawX = (int16_t)analogRead(ACCEL_X_PIN);
-        int16_t rawY = (int16_t)analogRead(ACCEL_Y_PIN);
-        int16_t rawZ = (int16_t)analogRead(ACCEL_Z_PIN);
-
-        // ---- Convert to g ----
-        float gx = ((float)(rawX - ADXL_ZERO_DEFAULT)) / ADXL_COUNTS_PER_G;
-        float gy = ((float)(rawY - ADXL_ZERO_DEFAULT)) / ADXL_COUNTS_PER_G;
-        float gz = ((float)(rawZ - ADXL_ZERO_DEFAULT)) / ADXL_COUNTS_PER_G;
-
-        // ---- Compute pitch & roll (degrees) ----
-        // Pitch: rotation about Y-axis = atan2(gx, sqrt(gy²+gz²))
-        // Roll:  rotation about X-axis = atan2(gy, sqrt(gx²+gz²))
-        float pitch = atan2(gx, sqrt(gy * gy + gz * gz)) * (180.0f / M_PI);
-        float roll  = atan2(gy, sqrt(gx * gx + gz * gz)) * (180.0f / M_PI);
-
-        // ---- Update dynamic values only ----
-        printValueInt(ROW_RAW_X, rawX);
-        printValueInt(ROW_RAW_Y, rawY);
-        printValueInt(ROW_RAW_Z, rawZ);
-
-        printValue(ROW_G_X, gx, 3);
-        printValue(ROW_G_Y, gy, 3);
-        printValue(ROW_G_Z, gz, 3);
-
-        printValue(ROW_PITCH, pitch, 1);
-        printValue(ROW_ROLL,  roll,  1);
-
-        FRAME_DELAY(fs);
+    tft.setCursor(DIRECTION_DATA_X, y);
+    switch (dir) {
+    case Direction::IDLE:
+        tft.print(F("IDLE"));
+        break;
+    case Direction::UP:
+        tft.print(F("UP"));
+        break;
+    case Direction::DOWN:
+        tft.print(F("DOWN"));
+        break;
+    case Direction::LEFT:
+        tft.print(F("LEFT"));
+        break;
+    case Direction::RIGHT:
+        tft.print(F("RIGHT"));
+        break;
+    case Direction::ERROR:
+        tft.print(F("ERROR"));
+        break;
     }
+    o_dir = dir;
 }

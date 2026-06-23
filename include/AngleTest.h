@@ -1,9 +1,14 @@
 #ifndef ANGLE_TEST_H
 #define ANGLE_TEST_H
+#include "Globals.h"
+#include <stdint.h>
 
-// ---- Angle Test Page ----
-// Displays live ADXL335 raw ADC, g values, and computed pitch/roll.
-// Blocking loop; returns when user presses button to exit.
+#define ANGLE_MIN 290
+#define ANGLE_MAX 450
+
+
+
 void loopAngleTest();
-
+Direction getDirectionForGameCatch(uint8_t getThreeAxisSensorData),
+    getDirectionForGame2048(uint8_t getThreeAxisSensorData);
 #endif // ANGLE_TEST_H

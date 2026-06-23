@@ -44,3 +44,4 @@
 *.yaml
 *.pio
 *.cache
+*.backup

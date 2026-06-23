@@ -37,13 +37,13 @@
 ## 後續待辦
 
 ### 高優先
-- [ ] 實際硬體驗證 ADXL335 零偏值（`ADXL_ZERO_DEFAULT` 可能需校正）
+- [x] 實際硬體驗證 ADXL335 零偏值（`ADXL_ZERO_DEFAULT` 可能需校正）
 - [ ] 確認 ILI9341 模組接腳（部分模組 CS/DC/RST 順序不同）
-- [ ] 編譯測試（arduino-cli 或 Arduino IDE，目標板：Arduino Nano）
+- [x] 編譯測試（arduino-cli 或 Arduino IDE，目標板：Arduino Nano）
 
 ### 中優先
-- [ ] 2048 win 條件觸發時顯示 "YOU WIN!" 畫面（目前 `drawGameOver(false)` 無觸發 win）
-  - 在 `doMove()` 後檢查 board 是否有 2048 格
+- [x] 2048 win 條件觸發時顯示 "YOU WIN!" 畫面（目前 `drawGameOver(false)` 無觸發 win）
+- [ ] 在 `doMove()` 後檢查 board 是否有 2048 格
 - [ ] 旋轉編碼器方向校正（順時針/逆時針對應 +/- 視實際元件而定）
 - [ ] 2048 高分紀錄（EEPROM 儲存）
 
@@ -51,3 +51,8 @@
 - [ ] 新增第二款遊戲（記憶體確認後）
 - [ ] 主菜單可視化美化（icon、動畫）
 - [ ] AngleTest 增加校正功能（按下基線歸零）
+
+### 高優先 -- Martis
+- [x] Refector 2048
+- [ ] Refector Catch Game
+- [ ] 序寫完整架構
