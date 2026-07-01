@@ -4,8 +4,6 @@
 #include <Arduino.h>
 #include <stdint.h>
 
-// ---- Game States ----
-enum class CatchState : uint8_t { CS_CALIBRATE, CS_PLAYING, CS_GAMEOVER };
 
 // ---- Falling Item Types ----
 // IT_ENEMY: red, deals 1 damage
@@ -26,10 +24,9 @@ enum class ItemType : uint8_t { IT_ENEMY = 0, IT_HEALTH, IT_COIN };
 #define CG_FALL_SPEED 2   // base pixels per frame
 #define CG_HUD_Y 4        // y of HUD row (HP + Score)
 #define CG_PLAY_TOP 20    // y where falling items start spawning
-
+#define CG_MOVE_SPEED 4
 // ---- Entry Point ----
 // Blocking loop; returns when user presses button to exit.
 // Caller is the main menu loop in .ino.
-void loopCatchGame();
-
+void enterCatchGame();
 #endif // CATCH_GAME_H

@@ -78,10 +78,7 @@ static void calibrate() {
     drawCalibationScreen();
     while (true) {
         updateHardware();
-        if (isButtonPressed()) {
-            captureBaseline();
-            break;
-        }
+        if (isButtonPressed()) break;
     }
 }
 

@@ -7,13 +7,18 @@
 #include <stdio.h>
 
 constexpr uint8_t VAL_X = 55, VAL_W = 120, GAPS_BETWEEN_ROWS = 20, DIRECTION_DATA_X = 100;
+
 constexpr uint8_t IDLE_RANGE = 15, THE_SAPERATE_LINE_FOR_DIR_AND_OTHERS = 160;
+
 constexpr uint8_t HEIGHT_OF_RAW_X = 80, HEIGHT_OF_RAW_Y = HEIGHT_OF_RAW_X + GAPS_BETWEEN_ROWS,
                   HEIGHT_OF_RAW_Z = HEIGHT_OF_RAW_X + 2 * GAPS_BETWEEN_ROWS;
+
 constexpr uint8_t HEIGHT_OF_SUBMENU = THE_SAPERATE_LINE_FOR_DIR_AND_OTHERS + 1 * GAPS_BETWEEN_ROWS,
                   HEIGHT_OF_2048 = THE_SAPERATE_LINE_FOR_DIR_AND_OTHERS + 2 * GAPS_BETWEEN_ROWS,
                   HEIGHT_OF_CATCH_GAME =
                       THE_SAPERATE_LINE_FOR_DIR_AND_OTHERS + 3 * GAPS_BETWEEN_ROWS;
+
+constexpr uint8_t ANGLE_MIN = 290,ANGLE_MAX = 450;
 
 // 左上為負 右下為正
 static int8_t threeAxisData[3];
@@ -63,9 +68,9 @@ void loopAngleTest() {
 
         // 把數值改成左上為負 右下為正
         *(threeAxisData + 0) =
-            static_cast<int8_t>((-1) * map(analogRead(ADXL_X), 290, 450, -50, 50));
-        *(threeAxisData + 1) = static_cast<int8_t>(map(analogRead(ADXL_Y), 290, 450, -50, 50));
-        *(threeAxisData + 2) = static_cast<int8_t>(map(analogRead(ADXL_Z), 290, 450, -50, 50));
+            static_cast<int8_t>((-1) * map(analogRead(ADXL_X), ANGLE_MIN, ANGLE_MAX, -50, 50));
+        *(threeAxisData + 1) = static_cast<int8_t>(map(analogRead(ADXL_Y), ANGLE_MIN, ANGLE_MAX, -50, 50));
+        *(threeAxisData + 2) = static_cast<int8_t>(map(analogRead(ADXL_Z), ANGLE_MIN, ANGLE_MAX, -50, 50));
 
         char buffer[3][4];
         snprintf(*(buffer + 0), 4, "%d", *(threeAxisData + 0));

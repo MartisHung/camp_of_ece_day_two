@@ -4,17 +4,11 @@
 #include <Arduino.h>
 #include <stdint.h>
 
-// ---- Game States ----
-enum class GState : uint8_t { GS_CALIBRATE, GS_PLAYING, GS_GAMEOVER };
-
 // ---- Board Layout (240×320 display, portrait) ----
-#define CELL_PX 60        // pixel size of each cell (4 × 60 = 240 = full width)
-#define BOARD_OFFSET_X 0  // board starts at left edge
-#define BOARD_OFFSET_Y 40 // leave 40 px at top for score/title
-#define SCORE_Y 8         // y-position of score label row
-#define GAMEOVER_Y 268    // y-position of game-over message row
-
-
+constexpr uint8_t CELL_PX = 60;        // pixel size of each cell (4 × 60 = 240 = full width)
+constexpr uint8_t BOARD_OFFSET_X = 0;  // board starts at left edge
+constexpr uint8_t BOARD_OFFSET_Y = 40; // leave 40 px at top for score/title
+constexpr uint8_t SCORE_Y = 8;         // y-position of score label row
 
 // ---- Entry Point ----
 // Blocking loop; returns when user presses button to exit.

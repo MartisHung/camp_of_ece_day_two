@@ -22,11 +22,6 @@ static void encoderISR() {
 // EasyButton default: INPUT_PULLUP, active LOW, 35 ms debounce
 static EasyButton encButton(ENC_SW);
 
-// ---- Private: ADXL Baseline ----
-static int16_t baseRawX = ADXL_ZERO_DEFAULT;
-static int16_t baseRawY = ADXL_ZERO_DEFAULT;
-static int16_t baseRawZ = ADXL_ZERO_DEFAULT;
-
 // ================================================================
 void initHardware() {
     Serial.begin(115200);
@@ -101,28 +96,6 @@ bool isButtonPressed() {
     return encButton.wasPressed(); // true once per press; EasyButton resets it
 }
 
-// ================================================================
-void captureBaseline() {
-    baseRawX = (int16_t)analogRead(ADXL_X);
-    baseRawY = (int16_t)analogRead(ADXL_Y);
-    baseRawZ = (int16_t)analogRead(ADXL_Z);
-    Serial.print(F("[ACCEL] baseline X="));
-    Serial.print(baseRawX);
-    Serial.print(F(" Y="));
-    Serial.print(baseRawY);
-    Serial.print(F(" Z="));
-    Serial.println(baseRawZ);
-}
-
-int16_t getBaseRawX() {
-    return baseRawX;
-}
-int16_t getBaseRawY() {
-    return baseRawY;
-}
-int16_t getBaseRawZ() {
-    return baseRawZ;
-}
 // the define is at "LcdRelated.h"
 void drawCalibationScreen(){
     tft.fillScreen(COLOR_BLACK);

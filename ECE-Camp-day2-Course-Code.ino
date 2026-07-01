@@ -108,7 +108,7 @@ void loop() {
             break;
         case 2:
             Serial.println(F("[MENU] -> loopCatchGame"));
-            loopCatchGame();
+            enterCatchGame();
             Serial.println(F("[MENU] <- loopCatchGame"));
             break;
         default:
