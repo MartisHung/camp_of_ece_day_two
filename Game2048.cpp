@@ -46,10 +46,10 @@ static uint32_t lastMoveTime;
 // ================================================================
 static void calibrate();
 static void game2048Init();
-static void gameLoop();
+static int8_t gameLoop();
 
-static uint8_t addRandomBlock();
 static void doMoveAndRender(Direction dir);
+static uint8_t addRandomBlock();
 static uint8_t doMove(Direction dir);
 static uint8_t slideLine(uint8_t row[GRID_N]);
 static uint8_t isGameOver();
@@ -67,8 +67,7 @@ static void drawGameOver(bool won);
 // ================================================================
 void enterGame2048() {
     calibrate();
-    game2048Init();
-    gameLoop();
+    if (gameLoop()) game2048Init();
 }
 
 // ================================================================
@@ -106,14 +105,17 @@ static void game2048Init() {
 }
 
 // ================================================================
-// gameLoop
+// gameLoop return
+// -> 0     Button Pressed Intrrupt
+// -> 1     won & exit correctly
+// -> -1    Lost but exit correctly
 // ================================================================
-static void gameLoop() {
+static int8_t gameLoop() {
     while (true) {
         uint32_t fs = millis();
         updateHardware();
 
-        if (isButtonPressed()) return;
+        if (isButtonPressed()) return 0;
 
         Direction dir = getDirectionForGame2048(1);
 
@@ -125,12 +127,12 @@ static void gameLoop() {
                 if (isWon()) {
                     drawGameOver(true);
                     while (!isButtonPressed()) updateHardware();
-                    return;
+                    return 1;
                 }
                 if (isGameOver()) {
                     drawGameOver(false);
                     while (!isButtonPressed()) updateHardware();
-                    return;
+                    return -1;
                 }
             } else
                 drawDirection(Direction::IDLE);
@@ -152,12 +154,11 @@ static void doMoveAndRender(const Direction dir) {
 
     for (uint8_t r = 0; r < GRID_N; r++)
         for (uint8_t c = 0; c < GRID_N; c++)
-            if (static_cast<uint8_t>(board[r][c]) ^ static_cast<uint8_t>(prev[r][c]))
-                drawCell(r, c);
+            if (board[r][c] ^ prev[r][c]) drawCell(r, c);
 
-    drawGridLines();
+    // drawGridLines();
     drawDirection(dir);
-    if (static_cast<uint32_t>(score) ^ static_cast<uint32_t>(prevScore)) drawScore();
+    if (score ^ prevScore) drawScore();
 
     addRandomBlock(); // draws new tile internally
 }
@@ -216,7 +217,7 @@ static uint8_t slideLine(uint8_t row[GRID_N]) {
 
     // ---- merge equal adjacent ----
     for (uint8_t i = 0; i < GRID_N - 1; i++) {
-        if (row[i] && !(static_cast<uint8_t>(row[i]) ^ static_cast<uint8_t>(row[i + 1]))) {
+        if (row[i] && !(row[i] ^ row[i + 1])) {
             row[i]++;
             score += (1u << row[i]);
             row[i + 1] = 0;
@@ -302,12 +303,8 @@ static uint8_t isGameOver() {
 
     for (uint8_t r = 0; r < GRID_N; r++)
         for (uint8_t c = 0; c < GRID_N; c++) {
-            if (c < GRID_N - 1 &&
-                !(static_cast<uint8_t>(board[r][c]) ^ static_cast<uint8_t>(board[r][c + 1])))
-                return 0;
-            if (r < GRID_N - 1 &&
-                !(static_cast<uint8_t>(board[r][c]) ^ static_cast<uint8_t>(board[r + 1][c])))
-                return 0;
+            if (c < GRID_N - 1 && !(board[r][c] ^ board[r][c + 1])) return 0;
+            if (r < GRID_N - 1 && !(board[r][c] ^ board[r + 1][c])) return 0;
         }
     return 1;
 }

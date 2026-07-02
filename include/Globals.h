@@ -3,9 +3,9 @@
 #include <stdint.h>
 
 // ---- Frame Rate ----
-#define FRAME_MS 10U // 100 Hz
+constexpr uint8_t FRAME_MS = 10U; // 100 Hz
 // ---- Gameplay Tuning ----
-#define MOVE_COOLDOWN 400U
+constexpr uint16_t MOVE_COOLDOWN = 400U;
 
 // Caps loop to FRAME_MS; 'start' must be a uint32_t holding millis() at frame begin
 #define FRAME_DELAY(start)                                                                         \
@@ -16,15 +16,16 @@
 // the const of the colors & Menu attribute
 
 //  ---- Screen dimensions (ILI9341 portrait) ----
-#define TFT_W 240
-#define TFT_H 320
+// signed: compared against signed pixel coordinates throughout the games
+constexpr int16_t TFT_W = 240;
+constexpr int16_t TFT_H = 320;
 
 // ---- Tilt control (ADXL335) ----
 // Threshold expressed in degrees; compared as sin(angle) vs g to avoid asin() at runtime.
 // sin(15°) ≈ 0.2588
-#define TILT_THRESHOLD_DEG 30
-#define TILT_G_THRESH 0.5f
+constexpr uint8_t TILT_THRESHOLD_DEG = 30;
+constexpr float TILT_G_THRESH = 0.5f;
 
 // ERROR 是有兩個方向得大小是相同得
-enum class Direction : uint8_t { IDLE = 0, UP = 1, DOWN = 2, LEFT = 3, RIGHT = 4, ERROR = 5};
+enum class Direction : uint8_t { IDLE = 0, UP = 1, DOWN = 2, LEFT = 3, RIGHT = 4, ERROR = 5 };
 #endif // GLOBALS_H

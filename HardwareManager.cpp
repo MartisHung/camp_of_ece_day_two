@@ -61,14 +61,13 @@ void initHardware() {
     Serial.println(F("[HW] initHardware complete"));
 }
 
-// ================================================================
 void updateHardware() {
     // Encoder is ISR-driven; nothing to poll here.
     // Button debounce state machine must be driven every loop.
     encButton.read();
 }
 
-// ================================================================
+// ----------------Easy Button Functions----------------
 void enableEncoderISR() {
     noInterrupts();
     encoderDelta = 0; // discard stale delta before re-enabling
@@ -76,13 +75,10 @@ void enableEncoderISR() {
     attachInterrupt(digitalPinToInterrupt(ENC_CLK), encoderISR, RISING);
     Serial.println(F("[ENC] ISR enabled"));
 }
-
 void disableEncoderISR() {
     detachInterrupt(digitalPinToInterrupt(ENC_CLK));
     Serial.println(F("[ENC] ISR disabled"));
 }
-
-// ================================================================
 int8_t getEncoderDelta() {
     // Atomic read+clear (ISR may fire between read and clear)
     noInterrupts();
@@ -91,13 +87,12 @@ int8_t getEncoderDelta() {
     interrupts();
     return d;
 }
-
-bool isButtonPressed() {
+int8_t isButtonPressed() {
     return encButton.wasPressed(); // true once per press; EasyButton resets it
 }
 
 // the define is at "LcdRelated.h"
-void drawCalibationScreen(){
+void drawCalibationScreen() {
     tft.fillScreen(COLOR_BLACK);
     tft.setTextColor(COLOR_WHITE, COLOR_BLACK);
     tft.setTextSize(2);
@@ -110,5 +105,4 @@ void drawCalibationScreen(){
     tft.print(F("in your play position,"));
     tft.setCursor(10, 145);
     tft.print(F("then press button."));
-
 }
