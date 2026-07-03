@@ -23,10 +23,12 @@ static uint32_t lastSpawnTime;
 static uint16_t spawnInterval;
 static uint8_t fallSpeed;
 
-static void calibrate();
 static void catchGameInit();
 static void gameLoop();
 
+static void printCentered(int16_t y, const __FlashStringHelper *s);
+static uint16_t itemColor(ItemType type);
+static void drawRuleRow(int16_t y, ItemType type, const __FlashStringHelper *name, const __FlashStringHelper *desc);
 static void drawStaticBG();
 static void drawHUDStatic();
 static void updateHPDisplay(int8_t oldHP, int8_t newHP);
@@ -40,19 +42,22 @@ static uint8_t checkCollision(const FallingItem &it);
 static void handleCollision(FallingItem &it);
 static void updateDifficulty();
 static void drawGameOverScreen();
+static void catchGameRules();
 
 void enterCatchGame() {
-    calibrate();
+    drawCalibationScreen();
+    catchGameRules();
     catchGameInit();
     gameLoop();
 }
 
-static void calibrate() {
-    drawCalibationScreen();
-    while (true) {
-        updateHardware();
-        if (isButtonPressed()) break;
-    }
+// Centers with getTextBounds, so it works at any text size.
+static void printCentered(const int16_t y, const __FlashStringHelper *s) {
+    int16_t x1, y1;
+    uint16_t w, h;
+    tft.getTextBounds(s, 0, y, &x1, &y1, &w, &h);
+    tft.setCursor((TFT_W - (int16_t)w) / 2, y);
+    tft.print(s);
 }
 
 static void catchGameInit() {
@@ -70,6 +75,42 @@ static void catchGameInit() {
     drawPlayer(-1, playerX);
 }
 
+static void drawRuleRow(const int16_t y, const ItemType type, const __FlashStringHelper *name,
+                        const __FlashStringHelper *desc) {
+    const FallingItem icon = {CG_RULES_L_X, y, type, 1};
+    drawItem(icon);
+
+    tft.setTextColor(itemColor(type), BG);
+    tft.setCursor(CG_RULES_L_X + CG_ITEM_SZ + 6, y + 2);
+    tft.print(name);
+
+    tft.setTextColor(TEXT_CLR, BG);
+    tft.setCursor(CG_RULES_R_X, y + 2);
+    tft.print(desc);
+}
+
+static void catchGameRules() {
+    tft.fillScreen(BG);
+
+    tft.setTextSize(2);
+    tft.setTextColor(TEXT_CLR, BG);
+    printCentered(30, F("CATCH GAME"));
+    tft.drawFastHLine(20, 60, TFT_W - 40, 0x7BEFu);
+
+    tft.setTextSize(1);
+    drawRuleRow(100, ItemType::IT_ENEMY, F("Enemy"), F("-1 HP"));
+    drawRuleRow(128, ItemType::IT_HEALTH, F("Health"), F("+1 HP"));
+    drawRuleRow(156, ItemType::IT_COIN, F("Coin"), F("+10 pts"));
+
+    tft.setTextColor(TEXT_CLR, BG);
+    printCentered(215, F("Tilt to move"));
+    printCentered(235, F("Press button to start"));
+
+    while (true) {
+        updateHardware();
+        if (isButtonPressed()) break;
+    }
+}
 static void gameLoop() {
     while (true) {
         uint32_t fs = millis();
@@ -152,23 +193,21 @@ static void drawPlayer(const int16_t oldX, const int16_t newX) {
     tft.fillRect(newX + 12, CG_PLAYER_Y + 3, 3, 3, BG);
 }
 
-static void drawItem(const FallingItem &it) {
-    uint16_t clr;
-    switch (it.type) {
+static uint16_t itemColor(const ItemType type) {
+    switch (type) {
     case ItemType::IT_ENEMY:
-        clr = ENEMY_CLR;
-        break;
+        return ENEMY_CLR;
     case ItemType::IT_HEALTH:
-        clr = HEALTH_CLR;
-        break;
+        return HEALTH_CLR;
     case ItemType::IT_COIN:
-        clr = COIN_CLR;
-        break;
+        return COIN_CLR;
     default:
-        clr = TEXT_CLR;
-        break;
+        return TEXT_CLR;
     }
-    tft.fillRect(it.x, it.y, CG_ITEM_SZ, CG_ITEM_SZ, clr);
+}
+
+static void drawItem(const FallingItem &it) {
+    tft.fillRect(it.x, it.y, CG_ITEM_SZ, CG_ITEM_SZ, itemColor(it.type));
 
     switch (it.type) {
     case ItemType::IT_ENEMY:
@@ -273,16 +312,15 @@ static void drawGameOverScreen() {
 
     tft.setTextSize(2);
     tft.setTextColor(ENEMY_CLR, BG);
-    tft.setCursor(40, 130);
-    tft.print(F("GAME OVER"));
+    printCentered(130, F("GAME OVER"));
 
     tft.setTextSize(1);
     tft.setTextColor(COIN_CLR, BG);
-    tft.setCursor(60, 160);
-    tft.print(F("Score: "));
-    tft.print(score);
+    char buf[16];
+    snprintf(buf, sizeof(buf), "Score: %u", score);
+    tft.setCursor((TFT_W - (int16_t)strlen(buf) * 6) / 2, 160);
+    tft.print(buf);
 
     tft.setTextColor(TEXT_CLR, BG);
-    tft.setCursor(30, 185);
-    tft.print(F("Press button to exit"));
+    printCentered(185, F("Press button to exit"));
 }

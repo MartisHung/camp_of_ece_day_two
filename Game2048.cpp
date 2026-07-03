@@ -66,20 +66,12 @@ static void drawGameOver(bool won);
 // Public entry
 // ================================================================
 void enterGame2048() {
-    calibrate();
-    if (gameLoop()) game2048Init();
+    drawCalibationScreen();
+    game2048Init();
+    gameLoop();
 }
 
-// ================================================================
-// calibrate
-// ================================================================
-static void calibrate() {
-    drawCalibationScreen();
-    while (true) {
-        updateHardware();
-        if (isButtonPressed()) break;
-    }
-}
+
 
 // ================================================================
 // game2048Init

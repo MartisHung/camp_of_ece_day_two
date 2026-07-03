@@ -19,4 +19,3 @@ SortIncludes: true
 SpaceAfterCStyleCast: false
 SpaceBeforeCtorInitializerColon: true
 SpaceBeforeRangeBasedForLoopColon: true
-

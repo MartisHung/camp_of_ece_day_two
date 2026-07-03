@@ -105,4 +105,8 @@ void drawCalibationScreen() {
     tft.print(F("in your play position,"));
     tft.setCursor(10, 145);
     tft.print(F("then press button."));
+    while (true) {
+        updateHardware();
+        if (isButtonPressed()) break;
+    }
 }

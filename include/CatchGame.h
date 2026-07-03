@@ -31,6 +31,8 @@ constexpr uint8_t CG_FALL_SPEED = 2;   // base pixels per frame
 constexpr uint8_t CG_HUD_Y = 4;        // y of HUD row (HP + Score)
 constexpr uint8_t CG_PLAY_TOP = 20;    // y where falling items start spawning
 constexpr uint8_t CG_MOVE_SPEED = 4;
+constexpr uint8_t CG_RULES_L_X = 30;   // rules 左欄起點（圖示 + 名稱）
+constexpr uint8_t CG_RULES_R_X = 100;  // rules 右欄起點（效果說明）
 // ---- Entry Point ----
 // Blocking loop; returns when user presses button to exit.
 // Caller is the main menu loop in .ino.

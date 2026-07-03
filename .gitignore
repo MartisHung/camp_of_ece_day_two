@@ -44,6 +44,4 @@
 *.yaml
 *.pio
 *.cache
-*.backup
-temp
 platformio.ini

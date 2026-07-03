@@ -37,7 +37,8 @@ Direction getDirectionForGame2048(uint8_t getThreeAxisSensorData) {
         return Direction::IDLE;
 }
 Direction getDirectionForGameCatch(uint8_t getThreeAxisSensorData) {
-    if (getThreeAxisSensorData) mappedData[0] = MAPPING_THE_AXIS_RELATED_DATA(FETCH_DATA_OF_AXIS_X);
+    if (getThreeAxisSensorData)
+        mappedData[0] = (-1) * MAPPING_THE_AXIS_RELATED_DATA(FETCH_DATA_OF_AXIS_X);
 
     return (mappedData[0] < -IDLE_RANGE || mappedData[0] > IDLE_RANGE)
                ? (mappedData[0] > IDLE_RANGE) ? Direction::RIGHT : Direction::LEFT
@@ -56,15 +57,15 @@ void loopAngleTest() {
         threeAxisData[1] = FETCH_DATA_OF_AXIS_Y;
         threeAxisData[2] = FETCH_DATA_OF_AXIS_Z;
 
-        mappedData[0] = MAPPING_THE_AXIS_RELATED_DATA(threeAxisData[0]);
+        mappedData[0] = (-1) * MAPPING_THE_AXIS_RELATED_DATA(threeAxisData[0]);
         mappedData[1] = MAPPING_THE_AXIS_RELATED_DATA(threeAxisData[1]);
         mappedData[2] = MAPPING_THE_AXIS_RELATED_DATA(threeAxisData[2]);
 
         // 最長 "-50 470" = 7 字元 + '\0'（map 後 ±50，raw 實測不超過 470）
         char buffer[3][8];
-        snprintf(buffer[0], 8, "%d %d", mappedData[0], threeAxisData[0]);
-        snprintf(buffer[1], 8, "%d %d", mappedData[1], threeAxisData[1]);
-        snprintf(buffer[2], 8, "%d %d", mappedData[2], threeAxisData[2]);
+        snprintf(buffer[0], 8, "%3d %d", mappedData[0], threeAxisData[0]);
+        snprintf(buffer[1], 8, "%3d %d", mappedData[1], threeAxisData[1]);
+        snprintf(buffer[2], 8, "%3d %d", mappedData[2], threeAxisData[2]);
 
         updateThreeAxisData(HEIGHT_OF_RAW_X, buffer[0]);
         updateThreeAxisData(HEIGHT_OF_RAW_Y, buffer[1]);
@@ -93,7 +94,7 @@ static void drawAngleTestBackground() {
     tft.setCursor(10, HEIGHT_OF_RAW_Y);
     tft.print(F("Map & RAW of Y:"));
     tft.setCursor(10, HEIGHT_OF_RAW_Z);
-    tft.print(F("Map &RAW of Z:"));
+    tft.print(F("Map & RAW of Z:"));
     tft.drawFastHLine(0, THE_SAPERATE_LINE_FOR_DIR_AND_OTHERS, TFT_W, COLOR_GRAY);
 
     tft.setTextSize(2);
@@ -113,17 +114,17 @@ static void drawAngleTestBackground() {
 // y -> the one which is changing (HEIGHT_OF_RAW_{X,Y,Z}這邊我高度都改差不多了)
 // *str -> 輸入得字串 int to str 再上層函數就該弄完
 static void updateThreeAxisData(const int8_t y, const char *str) {
-    tft.fillRect(DIRECTION_DATA_X, y, VAL_W, 10, COLOR_BLACK);
+    tft.fillRect(THE_DATA_X, y, VAL_W, 10, COLOR_BLACK);
     tft.setTextColor(COLOR_WHITE, COLOR_BLACK);
     tft.setTextSize(1);
-    tft.setCursor(DIRECTION_DATA_X, y);
+    tft.setCursor(THE_DATA_X, y);
     tft.print(str);
 }
 static void updateDirectionData(const uint8_t y, const Direction dir) {
-    tft.fillRect(DIRECTION_DATA_X, y, VAL_W, 30, COLOR_BLACK);
+    tft.fillRect(THE_DATA_X, y, VAL_W, 30, COLOR_BLACK);
     tft.setTextColor(COLOR_WHITE, COLOR_BLACK);
     tft.setTextSize(1);
-    tft.setCursor(DIRECTION_DATA_X, y);
+    tft.setCursor(THE_DATA_X, y);
     switch (dir) {
     case Direction::IDLE:
         tft.print(F("IDLE"));
